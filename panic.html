@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>⚠️ SISTEM CRITICAL ⚠️</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            background: black; transition: background-color 0.05s;
+            font-family: 'Courier New', monospace;
+        }
+        .container { text-align: center; padding: 20px; }
+        .main-text {
+            font-size: 2rem; font-weight: bold; color: red;
+            background: black; padding: 20px; border: 3px solid red;
+            border-radius: 20px; animation: pulse 0.3s infinite alternate;
+        }
+        .countdown {
+            font-size: 5rem; font-weight: bold; color: white;
+            background: black; margin-top: 30px; padding: 20px;
+            border-radius: 50px; display: inline-block; min-width: 150px;
+        }
+        .warning { margin-top: 40px; font-size: 1rem; color: yellow; }
+        @keyframes pulse {
+            0% { text-shadow: 0 0 5px red; border-color: red; }
+            100% { text-shadow: 0 0 20px red; border-color: orange; }
+        }
+        @keyframes shake {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(-5px,5px); }
+            50% { transform: translate(5px,-5px); }
+            75% { transform: translate(-3px,3px); }
+            100% { transform: translate(0,0); }
+        }
+        .shake { animation: shake 0.08s infinite; }
+    </style>
+</head>
+<body class="shake">
+    <div class="container">
+        <div class="main-text">💀 HP ANDA AKAN MATI TOTAL DALAM 💀</div>
+        <div class="countdown" id="countdown">5</div>
+        <div class="warning">⚡ SENTUH LAYAR UNTUK SUARA MEMATIKAN ⚡</div>
+    </div>
+    <script>
+        (function() {
+            let seconds = 5;
+            const countEl = document.getElementById('countdown');
+            const body = document.body;
+            let vibrateInterval, flashInterval, countdownInterval;
+
+            function brutalVibrate() {
+                if (navigator.vibrate) navigator.vibrate([300, 100, 500, 200, 400]);
+            }
+            brutalVibrate();
+
+            vibrateInterval = setInterval(() => {
+                if (navigator.vibrate) navigator.vibrate([200, 80, 300, 100, 500]);
+            }, 1300);
+
+            let flashColors = ['#ff0000', '#000000', '#ff3300', '#000000', '#cc0000'];
+            let idx = 0;
+            flashInterval = setInterval(() => {
+                body.style.backgroundColor = flashColors[idx % flashColors.length];
+                idx++;
+            }, 100);
+
+            countdownInterval = setInterval(() => {
+                seconds--;
+                if (seconds >= 0) {
+                    countEl.innerText = seconds;
+                    if (navigator.vibrate) navigator.vibrate(400);
+                    countEl.style.transform = 'scale(1.3)';
+                    setTimeout(() => { countEl.style.transform = 'scale(1)'; }, 150);
+                }
+                if (seconds < 0) {
+                    clearInterval(vibrateInterval);
+                    clearInterval(flashInterval);
+                    clearInterval(countdownInterval);
+                    if (navigator.vibrate) navigator.vibrate(0);
+                    document.querySelector('.main-text').innerHTML = '💀💀💀 SISTEM GAGAL MATI 💀💀💀<br><span style="font-size:1rem;">CUMAN BERCANDA, LO PANIK SENDIRI</span>';
+                    countEl.innerText = '0';
+                    document.querySelector('.warning').innerHTML = '🤡 Tenang, HP aman. Yang panik lo. 🤡';
+                    body.classList.remove('shake');
+                }
+            }, 1000);
+
+            // Suara setelah sentuh pertama
+            let audioStarted = false;
+            function startAudio() {
+                if (audioStarted) return;
+                audioStarted = true;
+                try {
+                    let ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    let osc = ctx.createOscillator();
+                    let gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = 880;
+                    gain.gain.value = 0.9;
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    ctx.resume();
+                    if (navigator.vibrate) navigator.vibrate(1000);
+                    setTimeout(() => {
+                        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.5);
+                    }, 3500);
+                } catch(e) { console.log(e); }
+            }
+            document.body.addEventListener('touchstart', startAudio, { once: true });
+            document.body.addEventListener('click', startAudio, { once: true });
+        })();
+    </script>
+</body>
+</html>
